@@ -157,6 +157,28 @@ opensuse_packages=(
     stow
 )
 
+amazon_packages=(
+    libcurl-devel
+    gcc
+    gcc-c++
+    make
+    libtool
+    python3
+    hwloc-devel
+    numactl-devel
+    libpciaccess-devel
+    libxml2-devel
+    xfsprogs-devel
+    gnutls-devel
+    lksctp-tools-devel
+    lz4-devel
+    protobuf-devel
+    protobuf-compiler
+    systemtap-sdt-devel
+    ninja-build
+    libatomic
+)
+
 if [ "$ID" = "ubuntu" ] || [ "$ID" = "debian" ]; then
     apt-get install -y "${debian_packages[@]}"
 elif [ "$ID" = "centos" ] || [ "$ID" = "fedora" ]; then
@@ -170,6 +192,18 @@ elif [ "$ID" = "arch" -o "$ID_LIKE" = "arch" ]; then
     pacman -Sy --needed "${arch_packages[@]}"
 elif [ "$ID" = "opensuse-leap" ]; then
     zypper install -y "${opensuse_packages[@]}"
+elif [ "$ID" = "amzn" ]; then
+    yum install -y "${amazon_packages[@]}"
+
+    function get_sources() {
+        curl -Ls "$1" | tar xz -C /usr/local/src
+    }
+
+    get_sources https://github.com/Kitware/CMake/releases/download/v3.13.2/cmake-3.13.2.tar.gz
+    cd /usr/local/src/cmake-3.13.2 && ./bootstrap --system-curl && make && make install
+
+    get_sources https://ftp.gnu.org/gnu/stow/stow-2.2.2.tar.gz
+    cd /usr/local/src/stow-2.2.2 && ./configure && make && make install
 else
     echo "Your system ($ID) is not supported by this script. Please install dependencies manually."
     exit 1
